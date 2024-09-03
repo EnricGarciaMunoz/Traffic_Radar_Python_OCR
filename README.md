@@ -1,117 +1,108 @@
-# Barcelona Population Analysis
+# Traffic Radar Using OCR in Python
 
-![Barcelona](dashboard_images/dashboard_cover.jpg)
+![traffic_radar_portrait](aditional_images/traffic_radar_portrait.jpg)
 
-### A Python and Power BI Project about the evolution of population in Barcelona and its Neighborhoods
+### A Data Science Project that simulates a Traffic Radar using Machine Learning
 
-These recent years people is leaving small towns to settle in big cities, that usually offers more opportunities and comfortability. There's even been many news talking about small towns offering free houses to new villagers in order to be more competitive. But how much has the population of cities really grown over the last years? This project tries to give an answer to this question, focused on a city to wich I belong nowadays, Barcelona. We'll try to answer using official City Hall data, and using all the steps in a typical Data Analytics project:
+For this project, we will need to be a little bit imaginative. Let's play a role. We've designed and constructed a traffic radar in a specfic area. More specically, it is a section radar. Section radars are composed by two different radars, that take the time of every car at the moment they pass by, and depending on how many time was spend between one picture and another, a traffic ticket may come to the owners house. This is what I'll create today. For the purpose of this project, lets supose that these two radars are separated 1km away from each other, and the seepd limit of the road is 60km/h, as we can see on the picture:
 
-* Question Formulation
-* Data Acquisition
-* Data Cleaning and Management
-* Data Analysis
-* Dashboard and Insights
+![radar_section_explanation](aditional_images/radar_section_explanation.png)
 
+As you can see, what this radars do is to take picture of the vehivles plate, and then mix the data to do their calculations.
+
+With the aim of achieving this project, I created myself a couple of csv files, called ["data_radar_1"](data/raw/data_radar_1.csv) and ["data_radar_2"](data/raw/data_radar_2.csv) representing the pictures taken by every radar. Each line of the csv represents a vehicle, and there's only information about the date and time when the picture was taken, and the image that the radar took at the plate of the vehicle.
+
+In data/images directory, we have the pictures of plates taken from the radars.
+
+From this point we need to detect who's cars have violated the speed limit.
+
+To achieve this project, we devided it in different steps:
 
 ## Steps of the project
 
-We defined steps to get the results we want from this project. Let's classify the project by those steps:
-
-### Question Formulation
-
-In this case, the question is pretty clear: How much has the population of Barcelona grown over the last years? 
-
-Having this question, we can proceed with the following step
-
-### Data Acquisition
-
-There is two main priorities when getting the data: 
-
-- Getting Data that solve our question.
-- Getting data that we can rely on.
-
-Fortunately, for this project I found official data from the Barcelona City Hall, called [Opened Data BCN](https://opendata-ajuntament.barcelona.cat/en/), and more specifically, [data about population](https://opendata-ajuntament.barcelona.cat/data/en/dataset/pad_mdbas), where there are many documents, each of them representig a year of records. This records are made the first day of the year, so in order to have many different dates, I'll take the years between 2015 and 2024.
-
-In this part, we just need to add all the files containing data in a single file, that will be cleaned to be analysed after. This part is done in the "main.py" file.
-
-### Data Cleaning and Management
-
-After grouping all the Data, we look for NULLS, duplicates and issues on Data. Even there's no NULL Data or duplicate rows, in the main.py file I called for eliminating these kind of rows, in case new data is added in the future.
-
-What had been changed is the column names, that i Translated to English (was initially in catalan).
-
-Apart from that, I changed data types, more specifically, for the Date column, converting it from a string to Date type.
-
-### Data Analysis
-
-You can see all the results of my Data in the analysis_results directory. As we can see there, there's an evolution in every District of Barcelona, and there's even an analysis on Districts that have grown the most between 2015 and 2024.
-
-You can see here some of the most interesting analysis made on this step:
+* Plate Detecting
+* Matching information from both radars
+* Traffic violation analysis
 
 
-- Population Growth in Barcelona over the last 10 years
-![population_growth](analysis_results/population_growth.png)
+### Plate detecting 
+
+This step is completed with the [plate_detecting.py](scripts/plate_detecting.py) script. what this script does is generating a function, called "extract_plate_text", that identifies the text of the plate of a car, given an image like this one:
+
+![plate7](data/images/plate7.PNG)
+
+The text taken from this picture is then going to be saved. But this will be in the following step.
+
+### Matching information from both radars
+
+In this step, what we do is take the information from the previously mentioned csv files, and the function "extract_plate_text" created previously, combine it and process it in a new csv file called ["combines_plate_data"](data/processed/combined_plate_data.csv). It is important to mention that this new csv has information of the radar that took the picture. This will be used in the following step.
 
 
-- 2024 distribution of population per District and Neighborhood
-![district_neighborhood_population](analysis_results/district_neighborhood_population_2024.png)
+### Traffic violation analysis
+
+In this final step, what we do is compare between the information of both radars. We have to take into account that the plates are always repeated, more specifically, they appear two times, one for each radar. In case this doesn't happen, this last step isn't done, assuming that the vehicle is still between both radars. Anyway, in those cases when, indeed, both radars detect the same plate, a calculation is done in order to get the speed of the vehicle. If this speed is greater than 60 (km/h), then the script returns the plate and the average speed of the vehicle between these two radars. This is what we see when we run the script:
+
+![speeding_detected](aditional_images/speeding_detected.PNG)
+
+Finally, the information about all the vehicles, those who had more speed than the limit and those who not, are stored in the [traffic_violation.csv](analysis/traffic_violation.csv). In this CSV we have one row per every plate, and in the last column we can see through a Boolean vlue wether the car that has this plate has commited a traffic volation or not.
 
 
-- 2015 - 2024 population comparison per District in Barcelona
-![2015-2024_population_comparison_per_District](analysis_results/2024-2015_population_comparison_per_district.png)
+## Project file Structure
+
+- `data/`: Contains the original Data (from radars and images) and the processed data
+- `data/images/`: all the pictures taken from the radars
+- `data/raw/`: initial data from radars 1 and 2.
+- `data/processed/`: information processed and combined, yet to determine the speeding violaion
+- `scripts/`: Contains the scripts to run the solution. Just to mention, the order of executing should be the following one: 1.-["plate_detcting.py"](scripts/plate_detecting.py), 2.-["csv_processing.py"](scripts/csv_processing.py) 3.-["traffic_violation_analysis.py"](scripts/traffic_violation_analysis.py). 
+- `analysis/`: the last csv with information on wether there's a traffic violation or not.
+- `aditional_images/`: Images used in the project in any way.
 
 
-### Dashboard and Insights
-
-Finally, with all the information we've acquired, I've made a Power BI report, in order to better show the insights taken. For this purpose, I created two new columns, representing the position of the districts, so we can easily distinguish the districts with more population. Here we have two pictures of what we can see in the dashboard:
-
-![zone_analysis_slide](dashboard_images/zone_analysis_slide.PNG)
-
-![population_evolution_slide](dashboard_images/population_evolution_slide.PNG)
-
-
-## Requirements
-
-Get sure to have the following libraries properly installed:
-
-- pandas
-- matplotlib
-- seaborn
-
-In case you don't, you can do it by using the following code:
-
-```bash
-pip install -r requirements.txt
-```
-
-
-## How to install and execute the project
+## Installation
 
 - Clone the repository with the following command:
-
 ```bash
-git clone <https://github.com/EnricGarciaMunoz/population_analysis_python>
+git clone https://github.com/EnricGarciaMunoz/Traffic_Radar_Python_OCR
 ```
 
 - Go to the project directory:
 
 ```bash
-cd population_analysis_python_powerbi
+cd Traffic_Radar_Python_OCR
+```
+
+- Create a virtual environment (optional but recommended):
+```bash
+python -m venv venv
+```
+
+- Activate virtual environment:
+```bash
+.\venv\Scripts\activate
 ```
 
 - Install the dependencies:
-
 ```bash
-pip install -r requirements.txt
+pip install pandas numpy opencv-python pytesseract
 ```
 
-- Execute main.py:
+
+## Usage
+
+Ensure that the CSV files and images are in the correct folders within the data directory.
+
+Run the CSV processing script:
 
 ```bash
-python main.py
+python scripts/csv_processing.py
+```
+Run the traffic violation analysis script:
+
+```bash
+python scripts/traffic_violation_analysis.py
 ```
 
-This will execute the project. Then you can go to the Power BI dashboard attached to the project. 
+This will generate a CSV file in the data/analysis directory with detected speed violations.
 
 
-I hope you enjoy the project!
+I hope you finde this project interesting. I strongly encourage you to contact with me if you have any doubt. Thank you!
